@@ -1,10 +1,12 @@
 import pybullet as p
 import pybullet_data
+import pybullet_robots
 
 if __name__ == '__main__':
     TIME_STEP = 0.001
     physicsClient = p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
+    # p.setAdditionalSearchPath(pybullet_robots.getDataPath())
     p.setGravity(0, 0, -9.8)
     p.setTimeStep(TIME_STEP)
 
