@@ -60,7 +60,8 @@ if __name__ == '__main__':
         for id in range(p.getNumJoints(robot_id)):
             qIndex = p.getJointInfo(robot_id, id)[3]
             if qIndex > -1:
-                p.setJointMotorControl2(robot_id, id, p.POSITION_CONTROL, joint_angles[qIndex-7], force=6.0)
+                p.setJointMotorControl2(robot_id, id, p.POSITION_CONTROL, joint_angles[qIndex-15], force=5)
+                # p.setJointMotorControl2(robot_id, id, p.POSITION_CONTROL, joint_angles[qIndex-7], force=6.0)
 
         if height <= 0.0 or height >= 0.1:
             velocity *= -1.0
