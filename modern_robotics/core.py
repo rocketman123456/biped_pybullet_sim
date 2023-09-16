@@ -216,7 +216,8 @@ def TransToRp(T):
                    [0, 1,  0]]),
          np.array([0, 0, 3]))
     """
-    T = np.array(T)
+    # TODO
+    # T = np.array(T)
     return T[0: 3, 0: 3], T[0: 3, 3]
 
 def TransInv(T):

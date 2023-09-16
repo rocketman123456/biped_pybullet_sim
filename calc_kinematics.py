@@ -54,26 +54,9 @@ Slist = np.array([
     [0, 1, 0, L1+L2, 0, 0]
 ]).T
 
-print(Slist)
+# print(Slist)
 
 T = np.array(M)
-
-def VecToso3(omg):
-    """Converts a 3-vector to an so(3) representation
-
-    :param omg: A 3-vector
-    :return: The skew symmetric representation of omg
-
-    Example Input:
-        omg = np.array([1, 2, 3])
-    Output:
-        np.array([[ 0, -3,  2],
-                  [ 3,  0, -1],
-                  [-2,  1,  0]])
-    """
-    return np.array([[0,      -omg[2],  omg[1]],
-                     [omg[2],       0, -omg[0]],
-                     [-omg[1], omg[0],       0]])
 
 def calcT(w1, v1, t1):
     omgmat1 = VecToso3(w1)
@@ -93,50 +76,17 @@ T4 = calcT(w4, v4, t4)
 T5 = calcT(w5, v5, t5)
 
 T = T1 @ T2 @ T3 @ T4 @ T5 @ M
-# print(T)
 
 thetalist = np.array([t1, t2, t3, t4, t5])
-# print(jacobian(T@thetalist, thetalist))
-# print(gradient(T, thetalist))
-
 dthetalist = np.array([dt1, dt2, dt3, dt4, dt5])
 ddthetalist = np.array([ddt1, ddt2, ddt3, ddt4, ddt5])
 
-M_5_6 = np.array([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, -L3],
-    [0, 0, 0, 1]])
-
-M_4_5 = np.array([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, -L2],
-    [0, 0, 0, 1]])
-
-M_3_4 = np.array([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, -L1],
-    [0, 0, 0, 1]])
-
-M_2_3 = np.array([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1]])
-
-M_1_2 = np.array([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1]])
-
-M_0_1 = np.array([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1]])
+M_5_6 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -L3], [0, 0, 0, 1]])
+M_4_5 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -L2], [0, 0, 0, 1]])
+M_3_4 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -L1], [0, 0, 0, 1]])
+M_2_3 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+M_1_2 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+M_0_1 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
 
 m1 = SX.sym('m1')
 Ixx1 = SX.sym('Ixx1')
@@ -231,44 +181,55 @@ g_ = np.array([0, 0, -g])
 #----------------------------------------------------------------
 
 n = len(thetalist)
-print(n)
+# print(n)
 Mi = np.eye(4)
-Ai = np.zeros((6, n))
+Ai = SX.zeros(6, 6)
 AdTi = [[None]] * (n + 1)
-Vi = np.zeros((6, n + 1))
-Vdi = np.zeros((6, n + 1))
+Vi = SX.zeros(6, n + 1) #np.zeros((6, n + 1))
+Vdi = SX.zeros(6, n + 1)
 Vdi[:, 0] = np.r_[[0, 0, 0], -np.array(g_)]
 
 Mlist = np.array([M_0_1, M_1_2, M_2_3, M_3_4, M_4_5, M_5_6])
 #
 AdTi[n] = Adjoint(TransInv(Mlist[n]))
 
-Ftip = np.array([0, 0, 0, 0, 0, 0])
-Fi = np.array(Ftip).copy()
+Fi = np.array([0, 0, 0, 0, 0, 0])
 
-print(Slist)
+Glist = np.array([G1, G2, G3, G4, G5])
+# print(Slist)
 #
-taulist = np.zeros(n)
+taulist = SX.zeros(n)
 for i in range(n):
-    Mi = np.dot(Mi,Mlist[i])
+    Mi = Mi @ Mlist[i]
     ad_temp = Adjoint(TransInv(Mi))
     s_temp = np.array(Slist)[:, i]
-    print(ad_temp)
-    print(s_temp)
+    # print(ad_temp)
+    # print(s_temp)
     Ai[:, i] = ad_temp @ s_temp #np.dot(Adjoint(TransInv(Mi)), np.array(Slist)[:, i])
-    print(Ai[:, i])
-    temp = Ai[:, i] * -thetalist[i]
-    print(temp)
-    # T1 = calcT(w1, v1, t1)
-    AdTi[i] = Adjoint(np.dot(MatrixExp6(VecTose3(Ai[:, i] * -thetalist[i])), TransInv(Mlist[i])))
-    Vi[:, i + 1] = np.dot(AdTi[i], Vi[:,i]) + Ai[:, i] * dthetalist[i]
-    Vdi[:, i + 1] = np.dot(AdTi[i], Vdi[:, i]) \
-                    + Ai[:, i] * ddthetalist[i] \
-                    + np.dot(ad(Vi[:, i + 1]), Ai[:, i]) * dthetalist[i]
+    # print(Ai[:, i])
+    temp = Ai[:, i]# * -thetalist[i]
+    # print(temp)
+    # print(temp.shape)
+    Mlisti_inv = TransInv(Mlist[i])
+    w = np.array([temp[0, 0], temp[1, 0], temp[2, 0]])
+    v = np.array([temp[3, 0], temp[4, 0], temp[5, 0]])
+    # print(w)
+    # print(v)
+    T_temp = calcT(w, v, thetalist[i])
+    R, p = TransToRp(T_temp)
+    # print(T_temp)
+    AdTi[i] = vertcat(horzcat(R, np.zeros((3, 3))), horzcat(VecToso3(p) @ R, R))
+    # print(AdTi[i])
+    # AdTi[i] = Adjoint(np.dot(MatrixExp6(VecTose3(Ai[:, i] * -thetalist[i])), TransInv(Mlist[i])))
+    Vi[:, i + 1] = AdTi[i] @ Vi[:,i] + Ai[:, i] * dthetalist[i]
+    Vdi[:, i + 1] = AdTi[i] @ Vdi[:, i] + Ai[:, i] * ddthetalist[i] + ad(Vi[:, i + 1]) @ Ai[:, i] * dthetalist[i]
+
+print(f"Vi: {Vi}")
+print(f"Vdi: {Vdi}")
+
 for i in range (n - 1, -1, -1):
-    Fi = np.dot(np.array(AdTi[i + 1]).T, Fi) \
-            + np.dot(np.array(Glist[i]), Vdi[:, i + 1]) \
-            - np.dot(np.array(ad(Vi[:, i + 1])).T, \
-                    np.dot(np.array(Glist[i]), Vi[:, i + 1]))
-    taulist[i] = np.dot(np.array(Fi).T, Ai[:, i])
+    Fi_temp = AdTi[i + 1].T @ Fi + Glist[i] @ Vdi[:, i + 1] - ad(Vi[:, i + 1]).T @ (Glist[i] @ Vi[:, i + 1])
+    # Fi = np.dot(np.array(AdTi[i + 1]).T, Fi) + np.dot(np.array(Glist[i]), Vdi[:, i + 1]) - np.dot(np.array(ad(Vi[:, i + 1])).T, np.dot(np.array(Glist[i]), Vi[:, i + 1]))
+    taulist[i] = Fi_temp.T @ Ai[:, i] #np.dot(np.array(Fi).T, Ai[:, i])
 # return taulist
+print(taulist)
