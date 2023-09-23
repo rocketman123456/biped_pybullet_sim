@@ -3,19 +3,17 @@ import moteus
 import asyncio
 import time
 import sys
-sys.path.append('./walking')
-
+# sys.path.append('./walking')
 
 DEBUG = False
-
 
 class Bipedal:
     def __init__(self):
         self.zero_position = []
         self.current_position = []
         self.motors = []
-        qr = moteus.QueryResolution()
-        qr._extra = {
+        self.qr = moteus.QueryResolution()
+        self.qr._extra = {
             moteus.Register.CONTROL_POSITION: moteus.F32,
             moteus.Register.CONTROL_VELOCITY: moteus.F32,
             moteus.Register.CONTROL_TORQUE: moteus.F32,
@@ -25,12 +23,12 @@ class Bipedal:
         }
 
         for i in range(5, 10):
-            motor = moteus.Controller(query_resolution=qr, id=i+1)
+            motor = moteus.Controller(query_resolution=self.qr, id=i+1)
             self.motors.append(motor)
             pass
 
         for i in range(0, 5):
-            motor = moteus.Controller(query_resolution=qr, id=i+1)
+            motor = moteus.Controller(query_resolution=self.qr, id=i+1)
             self.motors.append(motor)
             pass
 
@@ -75,7 +73,6 @@ class Bipedal:
         await self.send_position_command(self.motors[9], (motor_position[9]/(2*math.pi) + self.zero_position[9]))
 
     async def main(self):
-
         # 获取初始电机位置
         for motor in self.motors:
             zero_pos = await self.get_motor_position(motor)
@@ -88,7 +85,6 @@ class Bipedal:
             position = [0.00, 0.0, 0.00, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 + math.pi/4 * i * 0.001]
             await self.set_bipedal_joint(position)
             await asyncio.sleep(0.005)
-
 
 if __name__ == '__main__':
     bipedal_instance = Bipedal()
