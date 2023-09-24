@@ -45,10 +45,10 @@ class preview_control():
         self.ux, self.uy = 0.0, 0.0
         for i in range(0, round(period/dt)):
             self.f += [-np.linalg.inv(H+G.transpose()*P*G)*G.transpose()*np.linalg.matrix_power(xi.transpose(), i-1)*P*GR]
-        print(self.f)
+        # print(self.f)
 
     def set_param(self, t, current_x, current_y, foot_plan, pre_reset=False):
-        print('\n==set param==')
+        # print('\n==set param==')
         x, y = current_x.copy(), current_y.copy()
         if pre_reset == True:
             self.xp, self.yp = x.copy(), y.copy()
